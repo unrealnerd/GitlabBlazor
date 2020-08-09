@@ -1,0 +1,56 @@
+
+@apid = <app id>
+@secret = <app secret>
+
+@url = https://gitlab.Org.com/api/v4
+
+### @ name getToken
+#https://gitlab.Org.com/oauth/authorize?client_id=<>&&redirect_uri=http://localhost:8000&response_type=token&scope=read_repository+api
+
+@access_token = <token>
+
+###
+# @name listProjectsInGroup
+# MTRC
+@groupid = 738
+GET {{url}}/groups/{{groupid}}/projects?per_page=10&include_subgroups=true&page=1 HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+###
+GET {{url}}/groups/{{groupid}}/subgroups?per_page=10&include_subgroups=true&page=1 HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+###
+# @name searchProject
+GET {{url}}/projects?search=mr-messaging HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+###
+# @name searchProject
+GET {{url}}/projects?search=mr-messaging HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+@projectid = 50264
+
+###
+# @name getPipelines
+GET {{url}}/projects/{{projectid}}/pipelines?sort=desc&per_page=1 HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+###
+# @name getJobsByProjectId
+GET {{url}}/projects/{{projectid}}/jobs?sort=desc&per_page=10&page=2 HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+###
+# @name getCommitsByProjectId
+GET {{url}}/projects/{{projectid}}/repository/commits?sort=desc&per_page=10&page=1 HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+@commitId = 19097f10635b2fea5383755e4b2a2265151d8f7b
+
+###
+# @name getMergeRequestsByCommitId
+GET {{url}}/projects/{{projectid}}/repository/commits/{{commitId}}/merge_requests HTTP/1.1
+Authorization: Bearer {{access_token}}
+

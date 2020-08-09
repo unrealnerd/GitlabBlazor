@@ -1,0 +1,42 @@
+@using Org.Gitlab.Models
+@inject NavigationManager NavigationManager
+
+<nav aria-label="Page navigation components">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(PageInfo.PrevPage == 0 ? "disabled":"")">
+            <button class="page-link" @onclick=@( ()=> prev() ) tabindex="-1">Previous</button>
+        </li>
+        @for (int i = 1; i <= PageInfo.TotalPages; i++)
+        {
+            <li class="page-item @(PageInfo.Page == i? "active":"")">
+                @{var temp = i;}
+                <button class="page-link" @onclick=@( ()=> page(temp) )>@i</button>
+            </li>
+        }
+        <li class="page-item @(PageInfo.NextPage == 0 ? "disabled":"")">
+            <button class="page-link" @onclick=@( ()=> next() )>Next</button>
+        </li>
+    </ul>
+</nav>
+
+@code
+{
+    [Parameter]
+    public PageInfo PageInfo { get; set; }
+
+    void next()
+    {
+        NavigationManager.NavigateTo($"{PageInfo.Route}/page/{PageInfo.NextPage}", true);
+    }
+
+    void prev()
+    {
+        NavigationManager.NavigateTo($"{PageInfo.Route}/page/{PageInfo.PrevPage}", true);
+    }
+
+    void page(int index)
+    {
+        NavigationManager.NavigateTo($"{PageInfo.Route}/page/{index}", true);
+    }
+
+}

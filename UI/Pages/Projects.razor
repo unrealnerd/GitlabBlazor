@@ -1,0 +1,50 @@
+﻿@page "/projects/{groupId:int}/{groupName}"
+
+@using Inspector.Data
+@using Org.Gitlab.Models
+@using Inspector.Components
+@inject GitlabService gitlabService
+
+<h3>@groupName</h3>
+
+@if (projects == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>                
+                <th>Checkmarx</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in projects)
+            {
+                <tr>
+                    <td>@p.Name</td>
+                    <td>
+                        <Checkmarx ProjectId="@p.Id"></Checkmarx>
+                    </td>   
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Project[] projects;
+
+    [Parameter]
+    public int groupId { get; set; }
+
+    [Parameter]
+    public string groupName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        projects = await gitlabService.GetProjectsByGroupId(groupId);
+    }
+}

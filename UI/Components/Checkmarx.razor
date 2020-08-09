@@ -1,0 +1,24 @@
+@using Inspector.Data
+@inject GitlabService gitlabService
+
+@if(implemented)
+{
+    <span class="badge badge-success">done</span>
+}
+else
+{
+    <span class="badge badge-danger">not-done</span>
+}
+
+@code
+{
+    [Parameter]
+    public int ProjectId { get; set;}
+    private bool implemented;
+
+    protected override async Task OnInitializedAsync()
+    {
+        implemented = await gitlabService.IsCheckmarxImplemented(ProjectId);
+    }
+
+}

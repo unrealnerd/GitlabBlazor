@@ -1,0 +1,52 @@
+@page "/groups"
+@page "/groups/page/{page:int}"
+
+@using Inspector.Data
+@using Inspector.Components
+@using Org.Gitlab.Models
+@inject GitlabService gitlabService
+
+@if (subgroups == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Application Groups</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sg in subgroups)
+            {
+                <tr>
+                    <td>
+                        <a href="/projects/@sg.Id/@sg.Name">@sg.Name</a>
+                        </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <Pagination PageInfo=@pageInfo></Pagination>
+}
+
+@code 
+{
+    [Parameter]
+    public int? Page { get; set; }
+    private Project[] subgroups;
+    private PageInfo pageInfo;
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        var response = await gitlabService.GetSubGroups(738, Page ?? 1);
+
+        subgroups = response.Item1;
+        pageInfo = response.Item2;
+        pageInfo.Route = "/groups";
+    }
+
+    
+}
