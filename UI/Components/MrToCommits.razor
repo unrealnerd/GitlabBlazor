@@ -1,0 +1,19 @@
+@using Inspector.Data
+@inject GitlabService gitlabService
+
+
+    <span>@(commitToMrPercentage * 100) %</span>
+
+
+@code
+{
+    [Parameter]
+    public int ProjectId { get; set; }
+    private float commitToMrPercentage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        commitToMrPercentage = await gitlabService.PercentageOfCommitsWithMergeRequests(ProjectId);
+    }
+
+}

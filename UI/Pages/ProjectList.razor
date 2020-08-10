@@ -1,0 +1,75 @@
+﻿@page "/projects"
+@page "/projects/page/{page:int}"
+@page "/groups/{groupId:int}/projects"
+@page "/groups/{groupId:int}/projects/page/{page:int}"
+
+@using Inspector.Data
+@using Org.Gitlab.Models
+@using Inspector.Components
+@inject GitlabService gitlabService
+
+<h3>@groupName</h3>
+
+@if (projects == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Project Name</th>                
+                <th>Checkmarx</th>
+                <th>% of code review</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in projects)
+            {
+                <tr>
+                    <td>@p.Name</td>
+                    <td>
+                        <Checkmarx ProjectId="@p.Id"></Checkmarx>
+                    </td>
+                    <td>
+                        <MrToCommits ProjectId="@p.Id"></MrToCommits>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <Pagination PageInfo=@pageInfo></Pagination>
+}
+
+@code {
+    private Project[] projects;
+
+    [Parameter]
+    public int? groupId { get; set; }
+
+    [Parameter]
+    public int? Page { get; set; }
+
+    [Parameter]
+    public string groupName { get; set; }
+
+    private PageInfo pageInfo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await gitlabService.GetProjectsByGroupId(groupId ?? 738, Page ?? 1);
+
+        projects = response.Item1;
+        pageInfo = response.Item2;
+        if (groupId == null)
+        {
+            pageInfo.Route = $"/projects";
+        }
+        else
+        {
+            pageInfo.Route = $"groups/{groupId}/projects";
+        }
+    }
+}

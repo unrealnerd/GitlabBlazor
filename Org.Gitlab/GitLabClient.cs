@@ -32,12 +32,14 @@ namespace Org.Gitlab
             return jobs;
         }
 
-        public async Task<List<Project>> GetProjectsByGroupId(int groupId)
+        public async Task<(List<Project>, PageInfo)> GetProjectsByGroupId(int groupId, int page)
         {
-            var streamTask = _client.GetStreamAsync($"{GitlabBaseUrl}/groups/{groupId}/projects?per_page=10&include_subgroups=false&page=1");
-            var projects = await JsonSerializer.DeserializeAsync<List<Project>>(await streamTask);
+            var response = await _client.GetAsync($"{GitlabBaseUrl}/groups/{groupId}/projects?per_page=10&include_subgroups=true&page={page}");
+            var projects = await JsonSerializer.DeserializeAsync<List<Project>>(await response.Content.ReadAsStreamAsync());
 
-            return projects;
+            _pageInfo.PopulatePageInfoFromHeader(response.Headers.ToDictionary(k => k.Key, v => string.Join("", v.Value)));
+
+            return (projects, _pageInfo);
         }
 
         public async Task<(List<Project>, PageInfo)> GetSubgroupsByGroupId(int groupId, int page)
@@ -56,6 +58,28 @@ namespace Org.Gitlab
             var jobs = await GetJobsByProjectId(projectId);
 
             return jobs.FirstOrDefault(j => j.Name.Contains("checkmarx")) != null;
+        }
+
+        public async Task<(List<Commit>, PageInfo)> GetCommitsByProjectId(int projectId)
+        {
+            var response = await _client.GetAsync($"{GitlabBaseUrl}/projects/{projectId}/repository/commits?sort=desc&per_page=50&all=true&page=1");
+
+            var commits = await JsonSerializer.DeserializeAsync<List<Commit>>(await response.Content.ReadAsStreamAsync());
+
+            _pageInfo.PopulatePageInfoFromHeader(response.Headers.ToDictionary(k => k.Key, v => string.Join("", v.Value)));
+
+            return (commits, _pageInfo);
+        }
+
+        public async Task<(List<MergeRequest>, PageInfo)> GetMergeRequestByProjectId(int projectId)
+        {
+            var response = await _client.GetAsync($"{GitlabBaseUrl}/projects/{projectId}/merge_requests?sort=desc&per_page=20&all=true&page=1");
+
+            var mergeRequests = await JsonSerializer.DeserializeAsync<List<MergeRequest>>(await response.Content.ReadAsStreamAsync());
+
+            _pageInfo.PopulatePageInfoFromHeader(response.Headers.ToDictionary(k => k.Key, v => string.Join("", v.Value)));
+
+            return (mergeRequests, _pageInfo);
         }
 
     }

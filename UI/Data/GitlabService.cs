@@ -15,11 +15,11 @@ namespace Inspector.Data
             gitlabClient = c;
         }
 
-        public async Task<Project[]> GetProjectsByGroupId(int groupId)
+        public async Task<(Project[], PageInfo)> GetProjectsByGroupId(int groupId, int page)
         {
-            var projects = await gitlabClient.GetProjectsByGroupId(groupId);
+            var response = await gitlabClient.GetProjectsByGroupId(groupId, page);
 
-            return projects.ToArray();
+            return (response.Item1.ToArray(), response.Item2);
 
         }
 
@@ -36,6 +36,23 @@ namespace Inspector.Data
             var result = await gitlabClient.IsCheckmarxImplemented(projectId);
 
             return result;
+
+        }
+
+        public async Task<float> PercentageOfCommitsWithMergeRequests(int projectId)
+        {
+            var mergerequests = await gitlabClient.GetMergeRequestByProjectId(projectId);
+
+            var commits = await gitlabClient.GetCommitsByProjectId(projectId);
+
+            float commitsWithMr = 0f;
+            foreach (var c in commits.Item1)
+            {
+                if (mergerequests.Item1.Exists(mr => mr.CommitId == c.Id))
+                    commitsWithMr++;
+            }            
+
+            return commits.Item1.Count > 0 ? (commitsWithMr / commits.Item1.Count) : 0f;
 
         }
     }
